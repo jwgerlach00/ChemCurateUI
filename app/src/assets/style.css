@@ -69,3 +69,8 @@ div.v-btn-toggle.nav-bar {
 button.v-btn.text-field-btn {
   height: 55px;
 }
+
+div.v-autocomplete {
+  background-color:#f8f8f2;
+  border-radius: 4px;
+}

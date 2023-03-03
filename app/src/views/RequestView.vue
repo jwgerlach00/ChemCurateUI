@@ -1,10 +1,16 @@
 <template>
   <v-container>
     <h1>RequestView</h1>
-    <RequestCard/>
+    <v-card height="600px">
+      <v-row>
+        <v-col cols="6">
+          <UniprotQuery/>
+        </v-col>
+      </v-row>
+    </v-card>
   </v-container>
 </template>
 
 <script setup>
-import RequestCard from '@/components/RequestCard.vue'
+import UniprotQuery from '@/components/UniprotQuery.vue'
 </script>
