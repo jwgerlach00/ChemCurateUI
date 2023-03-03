@@ -65,3 +65,7 @@ div.v-btn-toggle.nav-bar {
   color: #f8f8f2;
   background-color: #44475a;
 }
+
+button.v-btn.text-field-btn {
+  height: 55px;
+}
