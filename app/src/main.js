@@ -15,6 +15,8 @@ import { registerPlugins } from '@/plugins'
 
 import './assets/style.css'
 
+export const API_URL = 'http://0.0.0.0:5006/' // For non-docker
+
 const app = createApp(App)
 
 registerPlugins(app)
