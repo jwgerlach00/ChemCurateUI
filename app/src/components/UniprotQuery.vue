@@ -1,5 +1,10 @@
 <template>
-  <v-autocomplete label="Targets" :loading="loading" :items="items" v-model="select" v-model:search="search" chips multiple hide-details color="black"/>
+  <div>
+    <v-autocomplete label="Organisms" :loading="organismLoading" :items="organismItems" v-model="organismSelect"
+      v-model:search="organismSearch" chips multiple hide-details clearable color="black"/>
+    <!-- <v-autocomplete label="Proteins" :loading="proteinLoading" :items="proteinItems" v-model="proteinSelect"
+      v-model:search="proteinSearch" chips multiple hide-details clearable color="black"/> -->
+  </div>
 </template>
 
 <script setup>
@@ -7,95 +12,53 @@ import axios from 'axios'
 import { ref, watch } from 'vue'
 import { API_URL } from '@/main.js'
 
-const loading = ref(false)
-const items = ref([])
-const search = ref(null)
-const select = ref(null)
+const organismLoading = ref(false)
+const organismItems = ref([])
+const organismSearch = ref(null)
+const organismSelect = ref(null)
 
-get_uniprot_mapping()
-// const items = [
-//   'Alabama',
-//   'Alaska',
-//   'American Samoa',
-//   'Arizona',
-//   'Arkansas',
-//   'California',
-//   'Colorado',
-//   'Connecticut',
-//   'Delaware',
-//   'District of Columbia',
-//   'Federated States of Micronesia',
-//   'Florida',
-//   'Georgia',
-//   'Guam',
-//   'Hawaii',
-//   'Idaho',
-//   'Illinois',
-//   'Indiana',
-//   'Iowa',
-//   'Kansas',
-//   'Kentucky',
-//   'Louisiana',
-//   'Maine',
-//   'Marshall Islands',
-//   'Maryland',
-//   'Massachusetts',
-//   'Michigan',
-//   'Minnesota',
-//   'Mississippi',
-//   'Missouri',
-//   'Montana',
-//   'Nebraska',
-//   'Nevada',
-//   'New Hampshire',
-//   'New Jersey',
-//   'New Mexico',
-//   'New York',
-//   'North Carolina',
-//   'North Dakota',
-//   'Northern Mariana Islands',
-//   'Ohio',
-//   'Oklahoma',
-//   'Oregon',
-//   'Palau',
-//   'Pennsylvania',
-//   'Puerto Rico',
-//   'Rhode Island',
-//   'South Carolina',
-//   'South Dakota',
-//   'Tennessee',
-//   'Texas',
-//   'Utah',
-//   'Vermont',
-//   'Virgin Island',
-//   'Virginia',
-//   'Washington',
-//   'West Virginia',
-//   'Wisconsin',
-//   'Wyoming',
-// ]
+const proteinLoading = ref(false)
+const proteinItems = ref([])
+const proteinSearch = ref(null)
+const proteinSelect = ref(null)
 
-function get_uniprot_mapping () {
-  axios.get(`${API_URL}/get_uniprot_mapping`).then((res) => {
-    // console.log(res.data)
-    items.value = Object.keys(res.data)
+get_organisms()
+
+watch(organismSelect, (val) => {
+  console.log(val)
+  get_proteins()
+})
+
+function get_organisms () {
+  axios.get(`${API_URL}/get_organisms`).then((res) => {
+    organismItems.value = res.data
+    console.log(organismItems.value)
+    console.log(res.data)
   }).catch((error) => {
     console.log(error)
   })
 }
 
-watch(search, (val) => {
-  val && val !== select && querySelections(val)
+function get_proteins () {
+  axios.post(`${API_URL}/proteins_for_organisms`, { organisms: organismSelect.value }).then((res) => {
+    proteinItems.value = res.data
+  }).catch((error) => {
+    console.log(error)
+  })
+}
+
+watch(organismSearch, (val) => {
+  val && val !== organismSelect && querySelections(val)
 })
 
 function querySelections (v) {
-  loading.value = true
+  organismLoading.value = true
   // Simulated ajax query
   setTimeout(() => {
-    items.value = items.value.filter(e => {
+    organismItems.value = organismItems.value.filter(e => {
       return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
     })
-    loading.value = false
+    organismLoading.value = false
   }, 500)
 }
 
