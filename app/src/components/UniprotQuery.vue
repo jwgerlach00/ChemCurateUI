@@ -1,10 +1,27 @@
 <template>
-  <div>
-    <v-autocomplete label="Organisms" :loading="organismLoading" :items="organismItems" v-model="organismSelect"
-      v-model:search="organismSearch" chips multiple hide-details clearable color="black"/>
-    <v-autocomplete v-if="proteinItems.length" label="Proteins" :loading="proteinLoading" :items="proteinItems" v-model="proteinSelect"
-      v-model:search="proteinSearch" chips multiple hide-details clearable color="black"/>
-  </div>
+  <v-container>
+    <v-row dense>
+      <v-col cols="12">
+        <v-autocomplete label="Organisms" :loading="organismLoading" :items="organismItems" v-model="organismSelect"
+          v-model:search="organismSearch" color="black" chips multiple hide-details clearable/>
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col cols="12">
+        <v-autocomplete v-if="organismSelect.length" label="Proteins" placeholder="Type to reveal selections" :loading="proteinLoading"
+          :items="proteinItems" v-model="proteinSelect" v-model:search="proteinSearch" color="black" chips multiple
+          hide-details clearable/>
+      </v-col>
+      <!-- <v-col>
+        <v-btn v-if="proteinSelect.length" color="green-accent-2">Submit</v-btn>
+      </v-col> -->
+    </v-row>
+    <v-row dense>
+      <v-col cols="12">
+        <v-btn v-if="proteinSelect.length" color="green-accent-2" block>Submit</v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
@@ -13,7 +30,9 @@ import { ref, watch } from 'vue'
 import { API_URL } from '@/main.js'
 
 const organismLoading = ref(false)
-const organismItems = ref([])
+
+const organismItems = ref([]) // Display names (formatted by API)
+
 const organismSearch = ref(null)
 const organismSelect = ref([])
 
@@ -22,69 +41,47 @@ const proteinItems = ref([])
 const proteinSearch = ref(null)
 const proteinSelect = ref([])
 
-get_organisms()
+getOrganisms()
 
-watch(organismSelect, (val) => {
-  if (val.length) {
-    get_proteins()
-  } else {
-    proteinItems.value = []
-    proteinSelect.value = []
-  }
-})
-
-function get_organisms () {
+function getOrganisms () {
   axios.get(`${API_URL}/get_organisms`).then((res) => {
     organismItems.value = res.data
-    console.log(organismItems.value)
-    console.log(res.data)
-  }).catch((error) => {
-    console.log(error)
-  })
-}
-
-function get_proteins () {
-  axios.post(`${API_URL}/proteins_for_organisms`, { organisms: organismSelect.value }).then((res) => {
-    console.log(res.data)
-    proteinItems.value = res.data
   }).catch((error) => {
     console.log(error)
   })
 }
 
 watch(organismSearch, (val) => {
-  val && val !== organismSelect && querySelections(val)
+  val && val !== organismSelect && queryOrganismSelections(val)
 })
 
 watch(proteinSearch, (val) => {
-  val && val !== proteinSelect && querySelections(val)
+  val && val !== proteinSelect && queryProteinSelections(val)
 })
 
-function querySelections (val) {
+function queryOrganismSelections (val) {
   organismLoading.value = true
-  // Simulated ajax query
   axios.post(`${API_URL}/query_organism_selections`, { query: val }).then((res) => {
     organismItems.value = res.data
     organismLoading.value = false
   }).catch((error) => {
     console.log(error)
   })
-  // setTimeout(() => {
-  //   organismItems.value = organismItems.value.filter(e => {
-  //     return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
-  //   })
-  //   organismLoading.value = false
-  // }, 500)
 }
 
-function callAPISelection (value) {
-  axios.post(`${API_URL}/get_organisms`).then((res) => {
-    organismItems.value = res.data
-    console.log(organismItems.value)
-    console.log(res.data)
+function queryProteinSelections (val) {
+  proteinLoading.value = true
+  axios.post(`${API_URL}/query_protein_selections`, { query: val, organism: organismSelect.value[0] }).then((res) => {
+    proteinItems.value = res.data
+    proteinLoading.value = false
   }).catch((error) => {
     console.log(error)
   })
 }
-
 </script>
+
+<style scoped>
+button.v-btn {
+  height: 60px;
+}
+</style>
