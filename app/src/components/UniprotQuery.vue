@@ -2,8 +2,8 @@
   <div>
     <v-autocomplete label="Organisms" :loading="organismLoading" :items="organismItems" v-model="organismSelect"
       v-model:search="organismSearch" chips multiple hide-details clearable color="black"/>
-    <!-- <v-autocomplete label="Proteins" :loading="proteinLoading" :items="proteinItems" v-model="proteinSelect"
-      v-model:search="proteinSearch" chips multiple hide-details clearable color="black"/> -->
+    <v-autocomplete v-if="proteinItems.length" label="Proteins" :loading="proteinLoading" :items="proteinItems" v-model="proteinSelect"
+      v-model:search="proteinSearch" chips multiple hide-details clearable color="black"/>
   </div>
 </template>
 
@@ -15,18 +15,22 @@ import { API_URL } from '@/main.js'
 const organismLoading = ref(false)
 const organismItems = ref([])
 const organismSearch = ref(null)
-const organismSelect = ref(null)
+const organismSelect = ref([])
 
 const proteinLoading = ref(false)
 const proteinItems = ref([])
 const proteinSearch = ref(null)
-const proteinSelect = ref(null)
+const proteinSelect = ref([])
 
 get_organisms()
 
 watch(organismSelect, (val) => {
-  console.log(val)
-  get_proteins()
+  if (val.length) {
+    get_proteins()
+  } else {
+    proteinItems.value = []
+    proteinSelect.value = []
+  }
 })
 
 function get_organisms () {
@@ -41,6 +45,7 @@ function get_organisms () {
 
 function get_proteins () {
   axios.post(`${API_URL}/proteins_for_organisms`, { organisms: organismSelect.value }).then((res) => {
+    console.log(res.data)
     proteinItems.value = res.data
   }).catch((error) => {
     console.log(error)
@@ -51,15 +56,35 @@ watch(organismSearch, (val) => {
   val && val !== organismSelect && querySelections(val)
 })
 
-function querySelections (v) {
+watch(proteinSearch, (val) => {
+  val && val !== proteinSelect && querySelections(val)
+})
+
+function querySelections (val) {
   organismLoading.value = true
   // Simulated ajax query
-  setTimeout(() => {
-    organismItems.value = organismItems.value.filter(e => {
-      return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
-    })
+  axios.post(`${API_URL}/query_organism_selections`, { query: val }).then((res) => {
+    organismItems.value = res.data
     organismLoading.value = false
-  }, 500)
+  }).catch((error) => {
+    console.log(error)
+  })
+  // setTimeout(() => {
+  //   organismItems.value = organismItems.value.filter(e => {
+  //     return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
+  //   })
+  //   organismLoading.value = false
+  // }, 500)
+}
+
+function callAPISelection (value) {
+  axios.post(`${API_URL}/get_organisms`).then((res) => {
+    organismItems.value = res.data
+    console.log(organismItems.value)
+    console.log(res.data)
+  }).catch((error) => {
+    console.log(error)
+  })
 }
 
 </script>
