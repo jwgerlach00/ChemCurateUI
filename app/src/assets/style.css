@@ -71,6 +71,9 @@ button.v-btn.text-field-btn {
 }
 
 div.v-autocomplete {
-  background-color:#f8f8f2;
-  border-radius: 4px;
+  color: #f8f8f2 !important;
+}
+
+div.v-select {
+  color: #f8f8f2 !important;
 }

@@ -1,11 +1,17 @@
 <template>
   <v-container>
 
+    <v-row dense>
+      <v-col>
+        <v-select label="Database sources" :items="DBOptions" variant="outlined" chips multiple hide-details clearable></v-select>
+      </v-col>
+    </v-row>
+
     <!-- Organism autocomplete selection -->
     <v-row dense>
       <v-col cols="12">
-        <v-autocomplete label="Organisms" :loading="organismLoading" :items="organismItems" v-model="organismSelect"
-          v-model:search="organismSearch" color="black" chips multiple hide-details clearable/>
+        <v-autocomplete label="Organisms" :items="organismItems" v-model="organismSelect"
+          v-model:search="organismSearch" variant="outlined" chips multiple hide-details clearable/>
       </v-col>
     </v-row>
 
@@ -17,9 +23,9 @@
       <div v-for="organism in organismSelect" :key="organism">
         <v-row dense>
           <v-col cols="12" dense>
-            <v-autocomplete :label="`${organism} Proteins`" :loading="proteinLoading[organism]"
-              :items="proteinItems[organism]" v-model="proteinSelect[organism]" v-model:search="proteinSearch[organism]"
-              color="black" chips multiple hide-details clearable>
+            <v-autocomplete :label="`${organism} Proteins`" :items="proteinItems[organism]"
+              v-model="proteinSelect[organism]" v-model:search="proteinSearch[organism]" variant="outlined" chips
+              multiple hide-details clearable>
 
               <!-- Pagination -->
               <template v-slot:append-item>
@@ -63,13 +69,17 @@ onBeforeMount(async () => {
 })
 
 /* ------------------------------------------------------ VARS ------------------------------------------------------ */
+// Database vars
+const DBOptions = [
+  'PubChem',
+  'ChEMBL'
+].sort()
+
 // Additional organism vars
-const organismLoading = ref(false)
 const organismSearch = ref('')
 const organismSelect = ref([])
 
 // Protein vars
-const proteinLoading = ref({})
 const proteinItems = ref({})
 const proteinSearch = ref({})
 const proteinSelect = ref({})
@@ -80,7 +90,6 @@ function clearProteinVars (organisms) {
       delete proteinItems.value[key]
       delete proteinSearch.value[key]
       delete proteinSelect.value[key]
-      delete proteinLoading.value[key]
     }
   }
 }
@@ -119,23 +128,18 @@ watch(organismSelect, (val) => {
   clearProteinVars(val) // Remove protein entries if organisms were deselected
   for (let organism of val) {
     proteinSearch.value[organism] = ''
-    proteinLoading.value[organism] = false
     pages.value[organism] = 1
   }
 })
 
 function queryOrganismSelections (val) {
-  organismLoading.value = true
   organismItems.value = queryFilter(Object.keys(uniprotMapObject), val) 
-  organismLoading.value = false
 }
 
 function queryProteinSelections (val, organism, targetPage) {
-  proteinLoading.value[organism] = true
   const all = queryFilter(uniprotMapObject[organism], val)
   numPages.value[organism] = Math.ceil(all.length/pageLength)
   proteinItems.value[organism] = all.slice((targetPage-1)*pageLength, (targetPage-1)*pageLength + pageLength)
-  proteinLoading.value[organism] = false
 }
 
 watch(organismSearch, (val) => {
