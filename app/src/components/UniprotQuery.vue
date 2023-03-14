@@ -26,7 +26,7 @@
                 <v-row justify="center" dense>
                   <v-col cols="10">
                     <v-pagination v-model="pages[organism]"
-                      :length="Math.ceil(uniprotMapObject[organism].length/pageLength)" rounded="circle"/>
+                      :length="numPages[organism]" rounded="circle"/>
                   </v-col>
                 </v-row>
               </template>
@@ -74,20 +74,27 @@ const proteinItems = ref({})
 const proteinSearch = ref({})
 const proteinSelect = ref({})
 
+function clearProteinVars (organisms) {
+  for (let key of Object.keys(proteinItems.value)) {
+    if (!organisms.includes(key)) {
+      delete proteinItems.value[key]
+      delete proteinSearch.value[key]
+      delete proteinSelect.value[key]
+      delete proteinLoading.value[key]
+    }
+  }
+}
+
 /* ----------------------------------------------- Protein pagination ----------------------------------------------- */
 const pageLength = 10
 const pages = ref({})
+const numPages = ref({})
 
 watch(pages, (val) => {
   for (let organism of organismSelect.value) {
-    changePage(val[organism], organism)
+    queryProteinSelections(proteinSearch.value[organism], organism, val[organism]) // Change page
   }
 }, { deep: true })
-
-function changePage(targetPage, organism) {
-  proteinItems.value[organism] = queryFilter(uniprotMapObject[organism], proteinSearch.value[organism])
-    .slice((targetPage-1)*pageLength, (targetPage-1)*pageLength + pageLength)
-}
 
 /* -------------------------------------------------- Submit button ------------------------------------------------- */
 const showSubmit = computed(() => {
@@ -108,9 +115,10 @@ function queryFilter(items, value) {
 }
 
 watch(organismSelect, (val) => {
+  queryOrganismSelections('') // Clear organism search
+  clearProteinVars(val) // Remove protein entries if organisms were deselected
   for (let organism of val) {
     proteinSearch.value[organism] = ''
-    changePage(1, organism)
     proteinLoading.value[organism] = false
     pages.value[organism] = 1
   }
@@ -122,20 +130,22 @@ function queryOrganismSelections (val) {
   organismLoading.value = false
 }
 
-function queryProteinSelections (val, organism) {
+function queryProteinSelections (val, organism, targetPage) {
   proteinLoading.value[organism] = true
-  proteinItems.value[organism] = queryFilter(uniprotMapObject[organism], val).slice(0, pageLength)
+  const all = queryFilter(uniprotMapObject[organism], val)
+  numPages.value[organism] = Math.ceil(all.length/pageLength)
+  proteinItems.value[organism] = all.slice((targetPage-1)*pageLength, (targetPage-1)*pageLength + pageLength)
   proteinLoading.value[organism] = false
 }
 
 watch(organismSearch, (val) => {
-  console.log('organism', val)
   val && val !== organismSelect && queryOrganismSelections(val)
 })
 
 watch(proteinSearch, (val) => {
   for (let organism of organismSelect.value) {
-    val[organism] && val[organism] !== proteinSelect.value[organism] && queryProteinSelections(val[organism], organism)
+    val[organism] && val[organism] !== proteinSelect.value[organism] &&
+      queryProteinSelections(val[organism], organism, 1) // Page 1
   }
 }, { deep: true })
 </script>
