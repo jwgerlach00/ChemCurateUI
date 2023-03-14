@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <h1>RequestView</h1>
-    <v-card height="300px" width="800px">
+    <v-card width="800px">
       <v-row>
         <v-col cols="12">
           <UniprotQuery/>
@@ -18,6 +18,8 @@ import UniprotQuery from '@/components/UniprotQuery.vue'
 <style scoped>
 div.v-card {
   margin: auto;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 .v-col {
   padding: 40px;
