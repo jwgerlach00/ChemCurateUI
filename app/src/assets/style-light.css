@@ -1,0 +1,84 @@
+body {
+    margin: 0px;
+  }
+  
+  .v-card {
+    background-color: #EEEEEE !important;
+  }
+  
+  h1 {
+    font-family: "Montserrat", sans-serif !important;
+    color: #282a36;
+    font-size: 50pt;
+    text-align: center;
+  }
+  
+  h2 {
+    font-family: "Montserrat", sans-serif !important;
+    color: #282a36;
+    font-size: 30pt;
+  }
+  
+  h3 {
+    font-family: "Montserrat", sans-serif !important;
+    color: #282a36;
+    font-size: 20pt;
+  }
+  
+  p {
+    font-family: "Montserrat", sans-serif !important;
+    color: #f8f8f2;
+    font-size: 1.2rem;
+    text-align: left;
+    white-space: pre-line;
+  }
+  
+  .warning-fade-enter-active,
+  .warning-fade-leave-active {
+    transition: opacity 0.5s ease;
+  }
+  
+  .warning-fade-enter-from,
+  .warning-fade-leave-to {
+    opacity: 0;
+  }
+  
+  .v-expansion-panel.model-config {
+    color: black !important;
+    background-color: #f8f8f2 !important;
+  }
+  .v-expansion-panel.global-config {
+    color: black !important;
+    background-color: #f8f8f2 !important;
+  }
+  
+  .v-expansion-panel-text {
+    background-color: #282a36;
+  }
+  
+  div.v-btn-toggle.nav-bar {
+    width: 100%;
+    color: #f8f8f2;
+    background-color: #44475a;
+  }
+
+  .v-text-field {
+    color: #282a36;
+  }
+  
+  button.v-btn.text-field-btn {
+    height: 55px;
+  }
+  
+  div.v-autocomplete {
+    color: #282a36 !important;
+  }
+  
+  div.v-select {
+    color: #282a36 !important;
+  }
+  
+  div.v-app {
+    background-color: #E0E0E0;
+  }
+  

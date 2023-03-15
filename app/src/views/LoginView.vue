@@ -64,9 +64,9 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// onBeforeMount(() => {
-//   axios.get(`${API_URL}/logout`)
-// })
+onBeforeMount(() => {
+  axios.get(`${API_URL}/logout`)
+})
 
 const modelLoginNav = ref('login')
 
@@ -137,8 +137,5 @@ h2 {
 }
 button.v-btn {
   height: 50px;
-}
-.v-text-field {
-  color: #f8f8f2;
 }
 </style>

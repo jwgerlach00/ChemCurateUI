@@ -2,10 +2,6 @@ body {
   margin: 0px;
 }
 
-.router-view {
-  background-color: #282a36 !important;
-}
-
 .v-card {
   background-color: #44475a !important;
 }
@@ -47,23 +43,14 @@ p {
   opacity: 0;
 }
 
-.v-expansion-panel.model-config {
-  color: black !important;
-  background-color: #f8f8f2 !important;
-}
-.v-expansion-panel.global-config {
-  color: black !important;
-  background-color: #f8f8f2 !important;
-}
-
-.v-expansion-panel-text {
-  background-color: #282a36;
-}
-
 div.v-btn-toggle.nav-bar {
   width: 100%;
   color: #f8f8f2;
   background-color: #44475a;
+}
+
+.v-text-field {
+  color: #f8f8f2;
 }
 
 button.v-btn.text-field-btn {

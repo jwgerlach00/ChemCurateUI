@@ -1,13 +1,11 @@
 <template>
-  <v-container>
-    <v-card>
-      <v-row>
-        <v-col cols="12">
-          <UniprotQuery/>
-        </v-col>
-      </v-row>
-    </v-card>
-  </v-container>
+  <v-row justify="center" dense>
+    <v-col cols="6">
+      <v-card>
+        <UniprotQuery class="uniprot-query"/>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
@@ -19,13 +17,13 @@ import UniprotQuery from '@/components/UniprotQuery.vue'
 
 const router = useRouter()
 
-// onBeforeMount(() => {
-//   axios.get(`${API_URL}/is_authenticated`).catch(e => {
-//     if (e.response.status === 401) {
-//       router.push({ name: 'login' })
-//     }
-//   })
-// })
+onBeforeMount(() => {
+  axios.get(`${API_URL}/is_authenticated`).catch(e => {
+    if (e.response.status === 401) {
+      router.push({ name: 'login' })
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -35,9 +33,8 @@ div.v-card {
   max-height: 70vh;
   overflow-y: auto;
   overflow-x:auto;
-  max-width: 800px;
 }
-.v-col {
+.uniprot-query {
   padding: 40px;
 }
 </style>
