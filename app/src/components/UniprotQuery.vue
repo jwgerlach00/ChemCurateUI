@@ -156,18 +156,10 @@ function queryFilter(items, value) {
 }
 
 watch(organismSelect, (val) => {
-  // if (val.length === 0) {
-  //   console.log('NULL')
-  //   console.log(Object.keys(proteinItems.value))
-  // }
-
   queryOrganismSelections('') // Clear organism search
   clearProteinVars(val) // Remove protein entries if organisms were deselected
 
-  console.log(Object.keys(proteinItems.value))
-
   for (let organism of val) {
-    queryProteinSelections('', organism, 1) // Reset protein search and page
     proteinSearch.value[organism] = ''
     pages.value[organism] = 1
   }
