@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1>RequestView</h1>
+    <h1>ChemCurate</h1>
     <v-card width="800px">
       <v-row>
         <v-col cols="12">
@@ -18,6 +18,7 @@ import UniprotQuery from '@/components/UniprotQuery.vue'
 <style scoped>
 div.v-card {
   margin: auto;
+  min-height: 20vh;
   max-height: 70vh;
   overflow-y: auto;
 }

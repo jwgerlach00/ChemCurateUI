@@ -1,14 +1,16 @@
 <template>
   <v-container>
 
+    <!-- Database selection -->
     <v-row dense>
       <v-col>
-        <v-select label="Database sources" :items="DBOptions" variant="outlined" chips multiple hide-details clearable></v-select>
+        <v-select label="Database sources" :items="DBOptions" v-model="DBSelect" variant="outlined" chips multiple
+          hide-details clearable></v-select>
       </v-col>
     </v-row>
 
     <!-- Organism autocomplete selection -->
-    <v-row dense>
+    <v-row v-if="DBSelect.length">
       <v-col cols="12">
         <v-autocomplete label="Organisms" :items="organismItems" v-model="organismSelect"
           v-model:search="organismSearch" variant="outlined" chips multiple hide-details clearable/>
@@ -21,7 +23,7 @@
 
       <!-- Autocomplete selection component for each selected organism -->
       <div v-for="organism in organismSelect" :key="organism">
-        <v-row dense>
+        <v-row>
           <v-col cols="12" dense>
             <v-autocomplete :label="`${organism} Proteins`" :items="proteinItems[organism]"
               v-model="proteinSelect[organism]" v-model:search="proteinSearch[organism]" variant="outlined" chips
@@ -45,7 +47,13 @@
     <!-- Submit button -->
     <v-row style="margin-top:10px;">
       <v-col cols="12">
-        <v-btn v-if="showSubmit" color="green-accent-2" block>Submit</v-btn>
+        <v-btn v-if="showSubmit" @click="submit()" color="green-accent-2" block>Submit</v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col>
+        <v-alert>{{ errorMsg }}</v-alert>
       </v-col>
     </v-row>
   </v-container>
@@ -74,6 +82,7 @@ const DBOptions = [
   'PubChem',
   'ChEMBL'
 ].sort()
+const DBSelect = ref([])
 
 // Additional organism vars
 const organismSearch = ref('')
@@ -90,6 +99,9 @@ function clearProteinVars (organisms) {
       delete proteinItems.value[key]
       delete proteinSearch.value[key]
       delete proteinSelect.value[key]
+      // Delete pagination vars too because they are dependent on protein keys
+      delete pages.value[key]
+      delete numPages.value[key]
     }
   }
 }
@@ -116,6 +128,26 @@ const showSubmit = computed(() => {
   }
 })
 
+function submit () {
+  const data = {
+    DBSelect: DBSelect.value,
+    organismSelect: organismSelect.value,
+    proteinSelect: proteinSelect.value
+  }
+  console.log(data)
+  console.log(Object.values(proteinSelect.value))
+  axios.post(`${API_URL}/submit`, data)
+    .then((res) => {
+      console.log(res.data)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
+
+/* ------------------------------------------------- Error flagging ------------------------------------------------- */
+const errorMsg = ref('')
+
 /* ----------------------------------------------- Autocomplete query ----------------------------------------------- */
 function queryFilter(items, value) {
   return items.filter(function(e) {
@@ -124,9 +156,18 @@ function queryFilter(items, value) {
 }
 
 watch(organismSelect, (val) => {
+  // if (val.length === 0) {
+  //   console.log('NULL')
+  //   console.log(Object.keys(proteinItems.value))
+  // }
+
   queryOrganismSelections('') // Clear organism search
   clearProteinVars(val) // Remove protein entries if organisms were deselected
+
+  console.log(Object.keys(proteinItems.value))
+
   for (let organism of val) {
+    queryProteinSelections('', organism, 1) // Reset protein search and page
     proteinSearch.value[organism] = ''
     pages.value[organism] = 1
   }
