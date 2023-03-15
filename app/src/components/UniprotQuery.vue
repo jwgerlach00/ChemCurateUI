@@ -94,6 +94,9 @@ const proteinSearch = ref({})
 const proteinSelect = ref({})
 
 function clearProteinVars (organisms) {
+  /*
+    Delete key-value pairs for newly deselected organisms
+  */
   for (let key of Object.keys(proteinItems.value)) {
     if (!organisms.includes(key)) {
       delete proteinItems.value[key]
@@ -103,6 +106,19 @@ function clearProteinVars (organisms) {
       delete pages.value[key]
       delete numPages.value[key]
     }
+  }
+}
+
+function initProteinVars (organisms) {
+  /*
+    Set keys for newly selected organisms
+  */
+  for (let organism of organisms) {
+    proteinItems.value[organism] = []
+    proteinSearch.value[organism] = ''
+    proteinSelect.value[organism] = []
+    pages.value[organism] = 1
+    numPages.value[organism] = null
   }
 }
 
@@ -129,6 +145,8 @@ const showSubmit = computed(() => {
 })
 
 function submit () {
+  console.log(Object.keys(proteinSelect.value))
+
   const data = {
     DBSelect: DBSelect.value,
     organismSelect: organismSelect.value,
@@ -158,11 +176,7 @@ function queryFilter(items, value) {
 watch(organismSelect, (val) => {
   queryOrganismSelections('') // Clear organism search
   clearProteinVars(val) // Remove protein entries if organisms were deselected
-
-  for (let organism of val) {
-    proteinSearch.value[organism] = ''
-    pages.value[organism] = 1
-  }
+  initProteinVars(val) // Initialize protein vars for new organisms
 })
 
 function queryOrganismSelections (val) {
