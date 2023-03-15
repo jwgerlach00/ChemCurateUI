@@ -51,9 +51,10 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row dense style="margin-top:0px;">
       <v-col>
-        <v-alert>{{ errorMsg }}</v-alert>
+        <v-alert v-if="errorMsg" type="error" color="red-accent-2">{{ errorMsg }}</v-alert>
+        <v-alert v-if="successMsg" type="success" color="green-accent-2">{{ successMsg }}</v-alert>
       </v-col>
     </v-row>
   </v-container>
@@ -114,11 +115,13 @@ function initProteinVars (organisms) {
     Set keys for newly selected organisms
   */
   for (let organism of organisms) {
-    proteinItems.value[organism] = []
-    proteinSearch.value[organism] = ''
-    proteinSelect.value[organism] = []
-    pages.value[organism] = 1
-    numPages.value[organism] = null
+    if (!proteinItems.value[organism]) {
+      proteinItems.value[organism] = []
+      proteinSearch.value[organism] = ''
+      proteinSelect.value[organism] = []
+      pages.value[organism] = 1
+      numPages.value[organism] = null
+    }
   }
 }
 
@@ -145,26 +148,37 @@ const showSubmit = computed(() => {
 })
 
 function submit () {
-  console.log(Object.keys(proteinSelect.value))
+  errorMsg.value = ''
+  successMsg.value = ''
+
+  for (let val of Object.values(proteinSelect.value)) {
+    if (!val.length) {
+      errorMsg.value = 'Select at least one protein for each organism or removed unused organisms.'
+      return
+    }
+  }
 
   const data = {
-    DBSelect: DBSelect.value,
-    organismSelect: organismSelect.value,
-    proteinSelect: proteinSelect.value
+    databases: DBSelect.value,
+    organism_protein_map: proteinSelect.value
   }
-  console.log(data)
-  console.log(Object.values(proteinSelect.value))
+
   axios.post(`${API_URL}/submit`, data)
     .then((res) => {
-      console.log(res.data)
+      if (res.data.error) {
+        errorMsg.value = res.data.error
+      } else {
+        successMsg.value = 'Success! Your job has been submitted.'
+      }
     })
-    .catch((err) => {
-      console.log(err)
+    .catch((_) => {
+      errorMsg.value = 'Error! Please try again.'
     })
 }
 
 /* ------------------------------------------------- Error flagging ------------------------------------------------- */
 const errorMsg = ref('')
+const successMsg = ref('')
 
 /* ----------------------------------------------- Autocomplete query ----------------------------------------------- */
 function queryFilter(items, value) {

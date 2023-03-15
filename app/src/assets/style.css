@@ -13,7 +13,7 @@ body {
 h1 {
   font-family: "Montserrat", sans-serif !important;
   color: #f8f8f2;
-  font-size: 70pt;
+  font-size: 50pt;
   text-align: center;
 }
 
@@ -76,4 +76,8 @@ div.v-autocomplete {
 
 div.v-select {
   color: #f8f8f2 !important;
+}
+
+div.v-app {
+  background-color: #282a36;
 }
