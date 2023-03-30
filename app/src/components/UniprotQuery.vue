@@ -13,7 +13,17 @@
     <v-row v-if="DBSelect.length">
       <v-col cols="12">
         <v-autocomplete label="Organisms" :items="organismItems" v-model="organismSelect"
-          v-model:search="organismSearch" variant="outlined" chips multiple hide-details clearable/>
+          v-model:search="organismSearch" variant="outlined" chips multiple hide-details clearable>
+          <!-- Pagination -->
+          <template v-slot:append-item>
+            <v-row justify="center" dense>
+              <v-col cols="10">
+                <v-pagination v-model="organismPage"
+                  :length="organismNumPages" rounded="circle"/>
+              </v-col>
+            </v-row>
+          </template>
+        </v-autocomplete>
       </v-col>
     </v-row>
 
@@ -67,14 +77,21 @@ import { API_URL } from '@/main.js'
 
 /* ----------------------------------------------- API initialization ----------------------------------------------- */
 let uniprotMapObject = {}
+const organismPageLength = 10
+
 const organismItems = ref([])
+const organismSearch = ref('')
+const organismSelect = ref([])
+const organismPage = ref(1)
+const organismNumPages = ref(null)
+
 onBeforeMount(async () => {
   /*
     SHOULD ADD LOADING HERE
   */
   const out = await axios.get(`${API_URL}/get_uniprot_map`)
   uniprotMapObject = out.data
-  organismItems.value = Object.keys(out.data) // Display names (formatted by API)
+  queryOrganismSelections('', organismPage.value) // Initial query
 })
 
 /* ------------------------------------------------------ VARS ------------------------------------------------------ */
@@ -84,10 +101,6 @@ const DBOptions = [
   'ChEMBL'
 ].sort()
 const DBSelect = ref([])
-
-// Additional organism vars
-const organismSearch = ref('')
-const organismSelect = ref([])
 
 // Protein vars
 const proteinItems = ref({})
@@ -124,6 +137,11 @@ function initProteinVars (organisms) {
     }
   }
 }
+
+/* ----------------------------------------------- Organism pagination ---------------------------------------------- */
+watch(organismPage, (val) => {
+  queryOrganismSelections(organismSearch.value, val) // Change page
+})
 
 /* ----------------------------------------------- Protein pagination ----------------------------------------------- */
 const pageLength = 10
@@ -188,13 +206,14 @@ function queryFilter(items, value) {
 }
 
 watch(organismSelect, (val) => {
-  queryOrganismSelections('') // Clear organism search
   clearProteinVars(val) // Remove protein entries if organisms were deselected
   initProteinVars(val) // Initialize protein vars for new organisms
 })
 
-function queryOrganismSelections (val) {
-  organismItems.value = queryFilter(Object.keys(uniprotMapObject), val) 
+function queryOrganismSelections (val, targetPage) {
+  const all = queryFilter(Object.keys(uniprotMapObject), val)
+  organismNumPages.value = Math.ceil(all.length/organismPageLength)
+  organismItems.value = all.slice((targetPage-1)*organismPageLength, (targetPage-1)*organismPageLength + organismPageLength)
 }
 
 function queryProteinSelections (val, organism, targetPage) {
@@ -204,7 +223,7 @@ function queryProteinSelections (val, organism, targetPage) {
 }
 
 watch(organismSearch, (val) => {
-  val && val !== organismSelect && queryOrganismSelections(val)
+  val && val !== organismSelect && queryOrganismSelections(val, 1) // Page 1
 })
 
 watch(proteinSearch, (val) => {
