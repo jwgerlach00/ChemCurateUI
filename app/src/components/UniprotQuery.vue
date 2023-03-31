@@ -4,8 +4,8 @@
     <!-- Database selection -->
     <v-row dense>
       <v-col>
-        <v-select label="Database sources" :items="DBOptions" v-model="DBSelect" variant="outlined" chips multiple
-          hide-details clearable></v-select>
+        <v-select label="Database source" :items="DBOptions" v-model="DBSelect" variant="outlined" hide-details
+          clearable></v-select>
       </v-col>
     </v-row>
 
@@ -76,6 +76,7 @@ import { ref, watch, computed, onBeforeMount } from 'vue'
 import { API_URL } from '@/main.js'
 
 /* ----------------------------------------------- API initialization ----------------------------------------------- */
+let DBUniprotMapObject = {}
 let uniprotMapObject = {}
 const organismPageLength = 10
 
@@ -90,8 +91,7 @@ onBeforeMount(async () => {
     SHOULD ADD LOADING HERE
   */
   const out = await axios.get(`${API_URL}/get_uniprot_map`)
-  uniprotMapObject = out.data
-  queryOrganismSelections('', organismPage.value) // Initial query
+  DBUniprotMapObject = out.data
 })
 
 /* ------------------------------------------------------ VARS ------------------------------------------------------ */
@@ -101,6 +101,13 @@ const DBOptions = [
   'ChEMBL'
 ].sort()
 const DBSelect = ref([])
+
+watch(DBSelect, (val) => {
+  organismSelect.value = []
+  uniprotMapObject = DBUniprotMapObject[val.toLowerCase()]
+  console.log(uniprotMapObject)
+  queryOrganismSelections('', organismPage.value) // Initial query
+})
 
 // Protein vars
 const proteinItems = ref({})
@@ -217,7 +224,9 @@ function queryOrganismSelections (val, targetPage) {
 }
 
 function queryProteinSelections (val, organism, targetPage) {
-  const all = queryFilter(uniprotMapObject[organism], val)
+  // console.log(uniprotMapObject[organism])
+  const all = queryFilter(Object.keys(uniprotMapObject[organism]), val)
+  // console.log
   numPages.value[organism] = Math.ceil(all.length/pageLength)
   proteinItems.value[organism] = all.slice((targetPage-1)*pageLength, (targetPage-1)*pageLength + pageLength)
 }
