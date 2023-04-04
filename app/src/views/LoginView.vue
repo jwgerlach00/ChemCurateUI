@@ -23,18 +23,19 @@
 
           <v-row justify="center" dense>
             <v-col cols="12">
-              <v-text-field label="Password" v-model="password" color="green-accent-2" variant="outlined" hide-details
-              :append-icon="eyePassword ? 'mdi-eye' : 'mdi-eye-off'" @click:append="() => (eyePassword = !eyePassword)"
-              :type="eyePassword ? 'password' : 'text'"/>
+              <v-text-field label="Password" v-model="password" @keyup.enter="login()" color="green-accent-2"
+                variant="outlined" hide-details
+                :append-icon="eyePassword ? 'mdi-eye' : 'mdi-eye-off'" @click:append="() => (eyePassword = !eyePassword)"
+                :type="eyePassword ? 'password' : 'text'"/>
             </v-col>
           </v-row>
 
           <v-row justify="center" dense v-if="modelLoginNav === 'register'">
             <v-col cols="12">
               <v-text-field label="Confirm password" v-model="confirmPassword" color="green-accent-2" variant="outlined"
-              hide-details
-              :append-icon="eyeConfirm ? 'mdi-eye' : 'mdi-eye-off'" @click:append="() => (eyeConfirm = !eyeConfirm)"
-              :type="eyeConfirm ? 'password' : 'text'"/>
+                hide-details
+                :append-icon="eyeConfirm ? 'mdi-eye' : 'mdi-eye-off'" @click:append="() => (eyeConfirm = !eyeConfirm)"
+                :type="eyeConfirm ? 'password' : 'text'"/>
             </v-col>
           </v-row>
           <v-row>

@@ -2,7 +2,7 @@
   <v-app class="v-app">
     <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'/> <!-- Google font import -->
     <v-main>
-      <h1>ChemCurate</h1>
+      <h1>AutoChem</h1>
       <v-row justify="center" dense>
         <v-col cols="6">
           <v-btn-toggle v-if="route.name !== 'login'" color="green-accent-2" divided style="width:100%;overflow-x:auto;">
