@@ -47,18 +47,7 @@
     </div>
 
     <!-- Submit button -->
-    <!-- <v-row style="margin-top:10px;">
-      <v-col cols="12">
-        <v-btn v-if="showSubmit" @click="submit()" color="green-accent-2" block>Submit</v-btn>
-      </v-col>
-    </v-row>
-
-    <v-row dense style="margin-top:0px;">
-      <v-col>
-        <v-alert v-if="errorMsg" type="error" color="red-accent-2">{{ errorMsg }}</v-alert>
-        <v-alert v-if="successMsg" type="success" color="green-accent-2">{{ successMsg }}</v-alert>
-      </v-col>
-    </v-row> -->
+    <Submit :organismProteinMap="proteinSelect"/>
   </v-container>
 </template>
 
@@ -66,6 +55,8 @@
 import axios from 'axios'
 import { ref, watch, computed, onBeforeMount } from 'vue'
 import { API_URL } from '@/main.js'
+
+import Submit from '@/components/Submit.vue'
 
 /* ----------------------------------------------- API initialization ----------------------------------------------- */
 const organismPageLength = 10
@@ -81,6 +72,7 @@ onBeforeMount(async () => {
   /*
     SHOULD ADD LOADING ANIMATION HERE
   */
+  // const proteinSelect = ref({'a': ['b']})
   const out = await axios.get(`${API_URL}/get_organism_names`)
   allOrganismsMap.value = out.data
   queryOrganismSelections('', organismPage.value) // initial query
@@ -140,50 +132,6 @@ watch(pages, (val) => {
     queryProteinSelections(proteinSearch.value[organism], organism, val[organism]) // Change page
   }
 }, { deep: true })
-
-/* -------------------------------------------------- Submit button ------------------------------------------------- */
-// const showSubmit = computed(() => {
-//   if (Object.keys(proteinSelect.value).length) {
-//     for (let protein in proteinSelect.value) {
-//       if (protein.length) {
-//         return true
-//       }
-//     }
-//   }
-// })
-
-// function submit () {
-//   errorMsg.value = ''
-//   successMsg.value = ''
-
-//   for (let val of Object.values(proteinSelect.value)) {
-//     if (!val.length) {
-//       errorMsg.value = 'Select at least one protein for each organism or removed unused organisms.'
-//       return
-//     }
-//   }
-
-//   const data = {
-//     databases: DBSelect.value,
-//     organism_protein_map: proteinSelect.value
-//   }
-
-//   axios.post(`${API_URL}/submit`, data)
-//     .then((res) => {
-//       if (res.data.error) {
-//         errorMsg.value = res.data.error
-//       } else {
-//         successMsg.value = 'Success! Your job has been submitted.'
-//       }
-//     })
-//     .catch((_) => {
-//       errorMsg.value = 'Error! Please try again.'
-//     })
-// }
-
-/* ------------------------------------------------- Error flagging ------------------------------------------------- */
-// const errorMsg = ref('')
-// const successMsg = ref('')
 
 /* ----------------------------------------------- Autocomplete query ----------------------------------------------- */
 function queryOrganismSelections (val, targetPage) {
