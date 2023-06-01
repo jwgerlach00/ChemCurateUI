@@ -2,7 +2,7 @@
   <v-row justify="center" dense>
     <v-col cols="6">
       <v-card>
-        <UniprotQuery class="uniprot-query"/>
+        <UniprotQueryDB class="uniprot-query"/>
       </v-card>
     </v-col>
   </v-row>
@@ -13,7 +13,7 @@ import { onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { API_URL } from '@/main.js'
-import UniprotQuery from '@/components/UniprotQuery.vue'
+import UniprotQueryDB from '@/components/UniprotQueryDB.vue'
 
 const router = useRouter()
 
