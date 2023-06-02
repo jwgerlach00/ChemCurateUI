@@ -135,8 +135,9 @@ watch(pages, (val) => {
 
 /* ----------------------------------------------- Autocomplete query ----------------------------------------------- */
 function queryOrganismSelections (val, targetPage) {
-  organismNumPages.value = Math.ceil(Object.keys(allOrganismsMap.value).length/organismPageLength)
-  organismsShownOnPage.value = Object.keys(allOrganismsMap.value).slice((targetPage-1)*organismPageLength, (targetPage-1)*organismPageLength + 
+  const all = queryFilter(Object.keys(allOrganismsMap.value), val)
+  organismNumPages.value = Math.ceil(all.length/organismPageLength)
+  organismsShownOnPage.value = all.slice((targetPage-1)*organismPageLength, (targetPage-1)*organismPageLength + 
     organismPageLength)
 }
 
