@@ -50,7 +50,7 @@
     <!-- <Submit :proteinSelect="proteinSelect"/> -->
     <v-row style="margin-top:10px;">
       <v-col cols="12">
-        <v-btn v-if="showSubmit" @click="submit()" color="green-accent-2" block>Submit</v-btn>
+        <v-btn v-if="showSubmit" @click="submit()" color="green-accent-2" block>Download</v-btn>
       </v-col>
     </v-row>
 
@@ -229,14 +229,22 @@ function submit () {
     }
   }
 
-  getUniprotIdsFromFormattedOrganismProteinSelect(organismProteinSelect.value)
+  const uniprotIds = getUniprotIdsFromFormattedOrganismProteinSelect(organismProteinSelect.value)
 
-  axios.post(`${API_URL}/submit`, { organism_protein_map: organismProteinSelect.value })
+  axios.post(`${API_URL}/submit_uniprot_query`, { uniprot_ids: uniprotIds }, { responseType: 'arraybuffer' })
     .then((res) => {
       if (res.data.error) {
         errorMsg.value = res.data.error
       } else {
-        successMsg.value = 'Success! Your job has been submitted.'
+        // successMsg.value = 'Success! Your job has been submitted.'
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `autochem_out.csv`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
       }
     })
     .catch((_) => {
@@ -245,14 +253,13 @@ function submit () {
 }
 
 function getUniprotIdsFromFormattedOrganismProteinSelect (map) {
-  for (const [formattedOrganism, formatted_proteins] of Object.entries(map)) {
-    // const unformattedOrganism = allOrganismsMap.value[formattedOrganism]
-    // console.log(unformattedOrganism)
-    // console.log(formatted_protein)
-    for (const formatted_protein of formatted_proteins) {
-      console.log(formatted_protein)
+  const uniprotIds = []
+  for (const [formattedOrganism, formattedProteins] of Object.entries(map)) {
+    for (const formattedProtein of formattedProteins) {
+      uniprotIds.push(organismProteinMap.value[formattedOrganism][formattedProtein])
     }
   }
+  return uniprotIds
 }
 </script>
 

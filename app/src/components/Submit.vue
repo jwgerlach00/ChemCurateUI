@@ -19,6 +19,8 @@
 
 <script setup>
 import { defineProps, ref, computed } from 'vue'
+import axios from 'axios'
+import { API_URL } from '@/main.js'
 
 const props = defineProps({
   organismProteinMap: {
@@ -43,17 +45,18 @@ const showSubmit = computed(() => {
 })
 
 function submit () {
-  errorMsg.value = ''
-  successMsg.value = ''
+  console.log('submittingstiff')
+  // errorMsg.value = ''
+  // successMsg.value = ''
 
-  for (let val of Object.values(organismProteinMap.value)) {
+  for (let val of Object.values(props.organismProteinMap)) {
     if (!val.length) {
       errorMsg.value = 'Select at least one protein for each organism or de-select unused organisms.'
       return
     }
   }
 
-  axios.post(`${API_URL}/submit`, { organism_protein_map: organismProteinMap.value })
+  axios.post(`${API_URL}/submit`, { organism_protein_map: props.organismProteinMap })
     .then((res) => {
       if (res.data.error) {
         errorMsg.value = res.data.error
