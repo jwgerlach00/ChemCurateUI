@@ -27,16 +27,16 @@
       <div v-for="organism in organismSelect" :key="organism">
         <v-row>
           <v-col cols="12" dense>
-            <v-autocomplete :label="`${organism} Proteins`" :items="proteinsShownOnPage[organism]"
-              v-model="proteinSelect[organism]" v-model:search="proteinSearch[organism]" variant="outlined" chips
+            <v-autocomplete :label="`${organism} Proteins`" :items="organismProteinsShownOnPage[organism]"
+              v-model="organismProteinSelect[organism]" v-model:search="organismProteinSearch[organism]" variant="outlined" chips
               multiple hide-details clearable>
 
               <!-- Pagination -->
               <template v-slot:append-item>
                 <v-row justify="center" dense>
                   <v-col cols="10">
-                    <v-pagination v-model="pages[organism]"
-                      :length="numPages[organism]" rounded="circle"/>
+                    <v-pagination v-model="organismProteinPages[organism]"
+                      :length="organismProteinNumPages[organism]" rounded="circle"/>
                   </v-col>
                 </v-row>
               </template>
@@ -47,7 +47,20 @@
     </div>
 
     <!-- Submit button -->
-    <Submit :organismProteinMap="proteinSelect"/>
+    <!-- <Submit :proteinSelect="proteinSelect"/> -->
+    <v-row style="margin-top:10px;">
+      <v-col cols="12">
+        <v-btn v-if="showSubmit" @click="submit()" color="green-accent-2" block>Submit</v-btn>
+      </v-col>
+    </v-row>
+
+
+    <v-row dense style="margin-top:0px;">
+      <v-col>
+        <v-alert v-if="errorMsg" type="error" color="red-accent-2">{{ errorMsg }}</v-alert>
+        <v-alert v-if="successMsg" type="success" color="green-accent-2">{{ successMsg }}</v-alert>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -56,86 +69,90 @@ import axios from 'axios'
 import { ref, watch, computed, onBeforeMount } from 'vue'
 import { API_URL } from '@/main.js'
 
-import Submit from '@/components/Submit.vue'
 
-/* ----------------------------------------------- API initialization ----------------------------------------------- */
+/* ----------------------------------------------- VARS ----------------------------------------------- */
+////////// Organism storage vars //////////
+const allOrganismsMap = ref({}) // all possible organisms map. key: formatted organism name, value: organism scientific name recognized by API
+const organismSearch = ref('') // search string for organism autocomplete
+const organismSelect = ref([]) // list of select organism formatted names
+
+////////// Organism pagination //////////
 const organismPageLength = 10
-
-const allOrganismsMap = ref({})
-const organismsShownOnPage = ref([])
-const organismSearch = ref('')
-const organismSelect = ref([])
-const organismPage = ref(1)
-const organismNumPages = ref(null)
-
-onBeforeMount(async () => {
-  /*
-    SHOULD ADD LOADING ANIMATION HERE
-  */
-  // const proteinSelect = ref({'a': ['b']})
-  const out = await axios.get(`${API_URL}/get_organism_names`)
-  allOrganismsMap.value = out.data
-  queryOrganismSelections('', organismPage.value) // initial query
-})
-
-
-/* ------------------------------------------------------ VARS ------------------------------------------------------ */
-// Protein vars
-const proteinsMap = ref({})
-const proteinsShownOnPage = ref({})
-const proteinSearch = ref({})
-const proteinSelect = ref({})
-
-function clearProteinVars (organisms) {
-  /*
-    Delete key-value pairs for newly deselected organisms
-  */
-  for (let key of Object.keys(proteinsShownOnPage.value)) {
-    if (!organisms.includes(key)) {
-      delete proteinsShownOnPage.value[key]
-      delete proteinSearch.value[key]
-      delete proteinSelect.value[key]
-      // Delete pagination vars too because they are dependent on protein keys
-      delete pages.value[key]
-      delete numPages.value[key]
-    }
-  }
-}
-
-// function initProteinVars (organisms) {
-//   /*
-//     Set keys for newly selected organisms
-//   */
-//   for (let organism of organisms) {
-//     if (!proteinsShownOnPage.value[organism]) {
-//       proteinsShownOnPage.value[organism] = []
-//       proteinSearch.value[organism] = ''
-//       proteinSelect.value[organism] = []
-//       pages.value[organism] = 1
-//       numPages.value[organism] = null
-//     }
-//   }
-// }
-
-/* ----------------------------------------------- Organism pagination ---------------------------------------------- */
+const organismsShownOnPage = ref([]) // list of formatted organism names to show on page for pagination
+const organismPage = ref(1) // current page of organism pagination
+const organismNumPages = ref(null) // number of total pages for organism pagination
 watch(organismPage, (val) => {
   queryOrganismSelections(organismSearch.value, val) // Change page
 })
 
-/* ----------------------------------------------- Protein pagination ----------------------------------------------- */
-const proteinPageLength = 10
-const pages = ref({})
-const numPages = ref({})
+// Protein vars
+const organismProteinMap = ref({}) // key: organism formatted name, value: dict (key: protein formatted name, value: uniprot ID)
+const organismProteinSearch = ref({}) // key: organism formatted name, value: search string for protein autocomplete
+const organismProteinSelect = ref({}) // key: organism formatted name, value: list of select protein formatted names
 
-watch(pages, (val) => {
+////////// Protein pagination //////////
+const proteinPageLength = 10 // number of proteins to show on each page
+const organismProteinsShownOnPage = ref({}) // key: organism formatted name, value: list of formatted protein names to show on page for pagination
+const organismProteinPages = ref({}) // key: organism formatted name, value: current page of protein pagination
+const organismProteinNumPages = ref({}) // key: organism formatted name, value: number of total pages for protein pagination
+watch(organismProteinPages, (val) => {
   for (let organism of organismSelect.value) {
-    queryProteinSelections(proteinSearch.value[organism], organism, val[organism]) // Change page
+    queryProteinSelections(organismProteinSearch.value[organism], organism, val[organism]) // Change page
   }
 }, { deep: true })
+
+
+
+
+
+
+onBeforeMount(async () => {
+  /*
+    Get all possible organisms from API
+  */
+  const out = await axios.get(`${API_URL}/get_organism_names`) // get a list of all possible organisms
+  allOrganismsMap.value = out.data
+  queryOrganismSelections('', organismPage.value) // initial query to just show first page
+})
+
+
+function clearProteinVarsForDeselectedOrganisms (organisms) {
+  /*
+    Delete key-value pairs for newly deselected organisms
+  */
+  for (let key of Object.keys(organismProteinMap.value)) {
+    if (!organisms.includes(key)) {
+      delete organismProteinMap.value[key]
+      delete organismProteinSearch.value[key]
+      delete organismProteinSelect.value[key]
+      delete organismProteinPages.value[key]
+      delete organismProteinNumPages.value[key]
+    }
+  }
+}
+
+function initProteinVarsForOrganism (organism, proteins) {
+  /*
+    Set keys for newly selected organisms
+  */
+  if (!organismProteinMap.value[organism]) {
+    organismProteinMap.value[organism] = proteins
+    organismProteinSearch.value[organism] = ''
+    organismProteinSelect.value[organism] = []
+    organismProteinPages.value[organism] = 1
+    organismProteinNumPages.value[organism] = null
+  }
+}
+
+/* ----------------------------------------------- Organism pagination ---------------------------------------------- */
+
+
+/* ----------------------------------------------- Protein pagination ----------------------------------------------- */
 
 /* ----------------------------------------------- Autocomplete query ----------------------------------------------- */
 function queryOrganismSelections (val, targetPage) {
   const all = queryFilter(Object.keys(allOrganismsMap.value), val)
+  console.log(all)
   organismNumPages.value = Math.ceil(all.length/organismPageLength)
   organismsShownOnPage.value = all.slice((targetPage-1)*organismPageLength, (targetPage-1)*organismPageLength + 
     organismPageLength)
@@ -148,50 +165,95 @@ function queryFilter(items, value) {
 }
 
 watch(organismSelect, (val) => {
-  const subset = organismSelect.value.reduce((acc, key) => {
+  ////////// Convert formatted name into a map w/ key: formatted name, value: scientific name; to pass to API //////////
+  const subsetOrganismMap = organismSelect.value.reduce((acc, key) => {
     if (key in allOrganismsMap.value) {
-      acc[key] = allOrganismsMap.value[key];
+      acc[key] = allOrganismsMap.value[key]
     }
-    return acc;
-  }, {});
+    return acc
+  }, {})
 
-  axios.post(`${API_URL}/post_protein_names`, { organism_map: subset })
+  axios.post(`${API_URL}/post_protein_names`, { organism_map: subsetOrganismMap })
     .then((res) => {
       if (res.data.error) {
         errorMsg.value = res.data.error
       } else {
-        // console.log(Object.keys(res.data))
+        clearProteinVarsForDeselectedOrganisms(Object.keys(res.data))
         for (const organism of Object.keys(res.data)) {
-          console.log(organism)
-          proteinsMap.value[organism] = Object.keys(res.data[organism])
-          queryProteinSelections('', organism, 1)
+          initProteinVarsForOrganism([organism], res.data[organism])
+
         }
       }
     })
-  
-  clearProteinVars(val) // Remove protein entries if organisms were deselected
-  // initProteinVars(val) // Initialize protein vars for new organisms
 })
 
 function queryProteinSelections (val, organism, targetPage) {
-  // console.log(uniprotMapObject[organism])
-  console.log(proteinsMap.value[organism])
-  const all = queryFilter(proteinsMap.value[organism], val)
-  // console.log
-  numPages.value[organism] = Math.ceil(all.length/proteinPageLength)
-  proteinsShownOnPage.value[organism] = all.slice((targetPage-1)*proteinPageLength, (targetPage-1)*proteinPageLength + proteinPageLength)
+  const all = queryFilter(Object.keys(organismProteinMap.value[organism]), val)
+  organismProteinNumPages.value[organism] = Math.ceil(all.length/proteinPageLength)
+  organismProteinsShownOnPage.value[organism] = all.slice((targetPage-1)*proteinPageLength, (targetPage-1)*proteinPageLength + proteinPageLength)
 }
 
 watch(organismSearch, (val) => {
   val && val !== organismSelect && queryOrganismSelections(val, 1) // Page 1
 })
 
-watch(proteinSearch, (val) => {
-  for (let organism of organismSelect.value) {
-    val[organism] && val[organism] !== proteinSelect.value[organism] &&
-      queryProteinSelections(val[organism], organism, 1) // Page 1
+watch(organismProteinSearch, (val) => {
+  for (const organism of organismSelect.value) {
+    val[organism] && val[organism] !== organismProteinSelect.value[organism] && queryProteinSelections(val[organism], organism, 1) // Page 1
   }
 }, { deep: true })
+
+////////// Error flagging //////////
+const errorMsg = ref('')
+const successMsg = ref('')
+
+////////// Submit button //////////
+const showSubmit = computed(() => {
+  if (Object.keys(organismProteinSelect.value).length) {
+    for (let protein in organismProteinSelect.value) {
+      if (protein.length) {
+        return true
+      }
+    }
+  }
+})
+
+function submit () {
+  errorMsg.value = ''
+  successMsg.value = ''
+
+  for (let val of Object.values(organismProteinSelect.value)) {
+    if (!val.length) {
+      errorMsg.value = 'Select at least one protein for each organism or de-select unused organisms.'
+      return
+    }
+  }
+
+  getUniprotIdsFromFormattedOrganismProteinSelect(organismProteinSelect.value)
+
+  axios.post(`${API_URL}/submit`, { organism_protein_map: organismProteinSelect.value })
+    .then((res) => {
+      if (res.data.error) {
+        errorMsg.value = res.data.error
+      } else {
+        successMsg.value = 'Success! Your job has been submitted.'
+      }
+    })
+    .catch((_) => {
+      errorMsg.value = 'Error! Please try again.'
+    })
+}
+
+function getUniprotIdsFromFormattedOrganismProteinSelect (map) {
+  for (const [formattedOrganism, formatted_proteins] of Object.entries(map)) {
+    // const unformattedOrganism = allOrganismsMap.value[formattedOrganism]
+    // console.log(unformattedOrganism)
+    // console.log(formatted_protein)
+    for (const formatted_protein of formatted_proteins) {
+      console.log(formatted_protein)
+    }
+  }
+}
 </script>
 
 <style scoped>
